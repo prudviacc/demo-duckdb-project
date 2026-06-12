@@ -1,0 +1,9 @@
+demo_duckdb_project:
+  outputs:
+    dev:
+      type: duckdb
+      path: ./dev_data.duckdb
+      database: dev_data
+      schema: main
+      threads: 4
+  target: dev

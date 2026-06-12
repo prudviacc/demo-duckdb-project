@@ -1,0 +1,69 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: Staging model pulling raw product data from the seed file
+    columns:
+      - name: product_id
+        description: Unique product identifier
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Product name
+      - name: product_price
+        description: Product price (raw, may contain invalid values)
+
+  - name: int_products_cleaned
+    description: Intermediate model with data quality checks and price categorization
+    columns:
+      - name: product_id
+        description: Unique product identifier
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Product name
+      - name: product_price
+        description: Product price
+      - name: price_tier
+        description: Product categorized by price range
+      - name: has_data_quality_issue
+        description: Flag indicating if product has data quality issues (e.g., negative price)
+
+  - name: dim_products
+    description: Dimension model with enriched product information and status
+    columns:
+      - name: product_id
+        description: Unique product identifier
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        description: Product name
+      - name: product_price
+        description: Product price
+      - name: price_tier
+        description: Price categorization
+      - name: product_status
+        description: Product status (Active or Flagged for quality issues)
+      - name: has_data_quality_issue
+        description: Data quality flag
+      - name: loaded_at
+        description: Timestamp when record was loaded
+
+  - name: fct_products_summary
+    description: Fact model with product metrics and aggregations
+    columns:
+      - name: total_products
+        description: Total count of products
+      - name: distinct_price_tiers
+        description: Count of distinct price tiers
+      - name: products_with_issues
+        description: Count of products with data quality issues
+      - name: avg_product_price
+        description: Average product price
+      - name: min_product_price
+        description: Minimum product price
+      - name: max_product_price
+        description: Maximum product price

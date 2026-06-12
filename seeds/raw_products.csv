@@ -1,0 +1,6 @@
+product_id,product_name,product_price
+1,Laptop,999.99
+2,Mouse,29.99
+3,Keyboard,79.99
+4,Monitor,349.99
+5,Defective Item,-10.00

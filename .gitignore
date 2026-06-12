@@ -1,0 +1,36 @@
+# Python virtual environment
+dbt-env/
+venv/
+env/
+.venv/
+
+# DuckDB database files
+*.duckdb
+*.duckdb.wal
+
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+manifest.json
+run_results.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# dbt state
+state/
