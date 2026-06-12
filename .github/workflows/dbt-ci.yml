@@ -45,10 +45,11 @@ jobs:
 
       - name: Upload dbt artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dbt-artifacts
           path: demo_duckdb_project/target/
+          retention-days: 30
 
       - name: Generate dbt documentation
         if: success()
@@ -58,10 +59,11 @@ jobs:
 
       - name: Upload dbt docs
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dbt-docs
           path: demo_duckdb_project/target/
+          retention-days: 30
 
       - name: Job Summary
         if: always()

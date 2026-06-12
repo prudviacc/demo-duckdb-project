@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload dbt artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dbt-artifacts
           path: demo_duckdb_project/target/
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload dbt manifest
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dbt-manifest
           path: demo_duckdb_project/target/manifest.json
