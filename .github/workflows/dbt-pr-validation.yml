@@ -30,33 +30,23 @@ jobs:
           pip install dbt-duckdb
 
       - name: dbt parse - Check syntax and schema
-        run: |
-          cd demo_duckdb_project
-          dbt parse --profiles-dir .
+        run: dbt parse --profiles-dir .
         continue-on-error: false
 
       - name: dbt seed - Load test data
-        run: |
-          cd demo_duckdb_project
-          dbt seed --profiles-dir . --show
+        run: dbt seed --profiles-dir . --show
         continue-on-error: false
 
       - name: dbt run - Build all models
-        run: |
-          cd demo_duckdb_project
-          dbt run --profiles-dir .
+        run: dbt run --profiles-dir .
         continue-on-error: false
 
       - name: dbt test - Data quality checks
         id: dbt-test
-        run: |
-          cd demo_duckdb_project
-          dbt test --profiles-dir . || true
+        run: dbt test --profiles-dir . || true
 
       - name: dbt docs generate - Create documentation
-        run: |
-          cd demo_duckdb_project
-          dbt docs generate --profiles-dir . || true
+        run: dbt docs generate --profiles-dir . || true
 
       - name: Create PR Comment with Results
         if: always()
@@ -87,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dbt-artifacts
-          path: demo_duckdb_project/target/
+          path: target/
           retention-days: 30
 
       - name: Upload dbt manifest
@@ -95,5 +85,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dbt-manifest
-          path: demo_duckdb_project/target/manifest.json
+          path: target/manifest.json
           retention-days: 30

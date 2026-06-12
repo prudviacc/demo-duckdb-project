@@ -27,19 +27,13 @@ jobs:
           pip install dbt-duckdb
 
       - name: dbt seed - Load seed data
-        run: |
-          cd demo_duckdb_project
-          dbt seed --profiles-dir .
+        run: dbt seed --profiles-dir .
 
       - name: dbt run - Execute models
-        run: |
-          cd demo_duckdb_project
-          dbt run --profiles-dir .
+        run: dbt run --profiles-dir .
 
       - name: dbt test - Run data quality tests
-        run: |
-          cd demo_duckdb_project
-          dbt test --profiles-dir . || echo "Test execution completed (some data quality issues detected)"
+        run: dbt test --profiles-dir . || echo "Test execution completed (some data quality issues detected)"
         continue-on-error: true
 
       - name: Upload dbt artifacts
@@ -47,21 +41,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dbt-artifacts
-          path: demo_duckdb_project/target/
+          path: target/
           retention-days: 30
 
       - name: Generate dbt documentation
         if: success()
-        run: |
-          cd demo_duckdb_project
-          dbt docs generate --profiles-dir .
+        run: dbt docs generate --profiles-dir .
 
       - name: Upload dbt docs
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: dbt-docs
-          path: demo_duckdb_project/target/
+          path: target/
           retention-days: 30
 
       - name: Job Summary
