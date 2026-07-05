@@ -1,0 +1,214 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Customer dimension table. One row per customer with enriched attributes for segmentation,
+      geographic analysis, and tenure-based cohort reporting.
+    columns:
+      - name: customer_id
+        description: Primary key. Unique identifier for each customer account.
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: Customer email address. Unique contact identifier for marketing and account management.
+        tests:
+          - unique
+          - not_null
+      - name: full_name
+        description: Concatenated display name (first_name + space + last_name).
+        tests:
+          - not_null
+      - name: segment
+        description: Customer business classification — Consumer (individual shoppers), Corporate (enterprise accounts), SMB (small/medium businesses).
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Consumer', 'Corporate', 'SMB']
+      - name: registration_year
+        description: Calendar year the customer account was created. Used for cohort analysis.
+        tests:
+          - not_null
+      - name: customer_tenure_segment
+        description: >
+          Time-relative cohort based on days since registration_date.
+          New: registered within the last 90 days.
+          Recent: registered 91–365 days ago.
+          Established: registered more than one year ago.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['New', 'Recent', 'Established']
+      - name: customer_status
+        description: Active/Inactive label derived from the is_active flag in the source system.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Active', 'Inactive']
+
+  - name: dim_products
+    description: >
+      Product dimension table. One row per SKU with full category hierarchy, supplier context,
+      margin metrics, and price tier segmentation. Used as the primary product reference across all fact tables.
+    columns:
+      - name: product_id
+        description: Primary key. Unique numeric product identifier.
+        tests:
+          - unique
+          - not_null
+      - name: sku
+        description: Stock Keeping Unit code. Unique alphanumeric identifier used in warehouse and POS operations.
+        tests:
+          - unique
+          - not_null
+      - name: gross_margin_pct
+        description: >
+          Gross margin as a percentage of the retail unit_price.
+          Equals (unit_price - unit_cost) / unit_price * 100.
+          Should be between 0 and 100 for active products with valid pricing.
+          Products with negative margin are sold below cost.
+        tests:
+          - not_null
+      - name: price_tier
+        description: >
+          Merchandising price segment.
+          Budget: under $25, Value: $25–$99, Standard: $100–$499, Premium: $500–$1999, Luxury: $2000+.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Budget', 'Value', 'Standard', 'Premium', 'Luxury']
+      - name: product_status
+        description: Current availability status. Active = available for sale. Discontinued = removed from catalog.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Active', 'Discontinued']
+      - name: department
+        description: Top-level business division. Aligns to in-store department layout and P&L reporting.
+        tests:
+          - not_null
+      - name: lead_time_days
+        description: Supplier lead time in calendar days. A lower value enables faster replenishment.
+
+  - name: dim_stores
+    description: >
+      Store location dimension. One row per physical retail location with geographic attributes,
+      operational type, and size classification.
+    columns:
+      - name: store_id
+        description: Primary key. Unique store identifier.
+        tests:
+          - unique
+          - not_null
+      - name: store_name
+        description: Descriptive name of the store location.
+        tests:
+          - not_null
+      - name: region
+        description: US geographic region for regional performance reporting.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Midwest', 'West', 'Northeast', 'South', 'Mountain', 'Southwest']
+      - name: store_type
+        description: Operational format. Flagship = large anchor store (>20k sqft). Standard = mid-size. Express = small-format convenience.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Flagship', 'Standard', 'Express']
+      - name: open_year
+        description: Year the store first opened. Used for store age and cohort analysis.
+        tests:
+          - not_null
+      - name: store_size_bucket
+        description: "Size classification based on square footage. Small: under 5000 sqft. Medium: 5000-14999 sqft. Large: 15000+ sqft."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Small', 'Medium', 'Large']
+      - name: store_status
+        description: Operational status of the store. Open = currently trading. Closed = no longer operating.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Open', 'Closed']
+
+  - name: dim_promotions
+    description: >
+      Promotion dimension. One row per promotional campaign with discount rules, eligibility windows,
+      and current lifecycle status computed relative to today's date.
+    columns:
+      - name: promotion_id
+        description: Primary key. Unique promotion identifier.
+        tests:
+          - unique
+          - not_null
+      - name: promotion_name
+        description: Human-readable campaign name as displayed to store staff and used in reporting.
+        tests:
+          - not_null
+      - name: discount_type
+        description: Discount calculation method. PERCENTAGE reduces price by a fraction. FIXED_AMOUNT deducts a flat dollar value.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['PERCENTAGE', 'FIXED_AMOUNT']
+      - name: discount_value
+        description: Magnitude of the discount. For PERCENTAGE, this is percentage points (e.g. 15.0 = 15% off). For FIXED_AMOUNT, this is USD.
+        tests:
+          - not_null
+      - name: promotion_duration_days
+        description: Total number of calendar days the promotion runs. Equals end_date minus start_date. Should be at least 1.
+        tests:
+          - not_null
+      - name: promotion_status
+        description: >
+          Lifecycle state of the promotion relative to the current date.
+          Active: within the valid date range and is_active = true.
+          Upcoming: start_date is in the future.
+          Expired: end_date has passed or is_active = false.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Active', 'Upcoming', 'Expired']
+      - name: applies_to_category_id
+        description: If not null, the promotion applies only to products in this category. NULL means store-wide eligibility.
+      - name: min_order_amount
+        description: Minimum order subtotal in USD required to redeem this promotion. Zero means no minimum threshold.
+
+  - name: dim_dates
+    description: >
+      Date dimension covering 2023-01-01 through 2024-12-31 (731 days), generated from DuckDB's
+      GENERATE_SERIES function. Provides calendar attributes for joining to order_date and sale_date
+      columns in fact tables.
+    columns:
+      - name: date_day
+        description: Primary key. The calendar date. One row per day in the range 2023-01-01 to 2024-12-31.
+        tests:
+          - unique
+          - not_null
+      - name: year
+        description: Calendar year (e.g. 2024).
+        tests:
+          - not_null
+      - name: quarter
+        description: Calendar quarter (1–4).
+        tests:
+          - not_null
+      - name: month
+        description: Calendar month number (1–12).
+        tests:
+          - not_null
+      - name: is_weekend
+        description: True for Saturday (day_of_week=6) and Sunday (day_of_week=0). Used to separate weekend from weekday sales patterns.
+        tests:
+          - not_null
+      - name: quarter_label
+        description: Human-readable quarter label for display, e.g. Q3 2024.
+        tests:
+          - not_null
+      - name: year_month
+        description: ISO year-month string for month-level time series aggregation, e.g. 2024-07.
+        tests:
+          - not_null

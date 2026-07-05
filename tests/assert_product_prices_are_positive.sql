@@ -1,1 +1,0 @@
-SELECT * FROM {{ ref('products') }} WHERE product_price < 0

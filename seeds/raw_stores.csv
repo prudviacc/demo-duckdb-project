@@ -1,0 +1,11 @@
+store_id,store_name,city,state,country,region,store_type,open_date,is_active,sq_footage
+1,Downtown Flagship Chicago,Chicago,IL,USA,Midwest,Flagship,2015-03-15,true,25000
+2,Westside Standard Chicago,Chicago,IL,USA,Midwest,Standard,2017-06-01,true,12000
+3,Eastside Express New York,New York,NY,USA,Northeast,Express,2018-11-01,true,4500
+4,Midtown Standard New York,New York,NY,USA,Northeast,Standard,2016-08-20,true,10500
+5,Downtown Flagship LA,Los Angeles,CA,USA,West,Flagship,2015-09-10,true,28000
+6,Westwood Express LA,Los Angeles,CA,USA,West,Express,2019-04-05,true,3800
+7,Houston Standard,Houston,TX,USA,South,Standard,2017-02-14,true,11000
+8,Austin Standard,Austin,TX,USA,South,Standard,2020-07-01,true,9500
+9,Denver Standard,Denver,CO,USA,Mountain,Standard,2018-03-22,true,8000
+10,Phoenix Express,Phoenix,AZ,USA,Southwest,Express,2022-11-12,false,4200

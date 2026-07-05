@@ -1,0 +1,13 @@
+category_id,category_name,parent_category_id,department
+1,Electronics,,Tech & Electronics
+2,Computers & Laptops,1,Tech & Electronics
+3,Mobile & Tablets,1,Tech & Electronics
+4,Fashion,,Fashion & Apparel
+5,Men's Clothing,4,Fashion & Apparel
+6,Women's Clothing,4,Fashion & Apparel
+7,Home & Garden,,Home & Living
+8,Furniture,7,Home & Living
+9,Garden Tools,7,Home & Living
+10,Grocery,,Food & Beverage
+11,Fresh Produce,10,Food & Beverage
+12,Beverages,10,Food & Beverage

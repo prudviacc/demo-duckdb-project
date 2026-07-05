@@ -1,0 +1,11 @@
+supplier_id,supplier_name,contact_email,city,state,country,lead_time_days,is_active
+1,TechSource Global,procurement@techsource.com,San Jose,CA,USA,7,true
+2,MobileTech Inc,orders@mobiletech.com,Austin,TX,USA,5,true
+3,Fresh Fields Supply,logistics@freshfields.com,Chicago,IL,USA,2,true
+4,StyleCo Apparel,buying@styleco.com,New York,NY,USA,14,true
+5,Urban Fashion Group,supply@urbanfashion.com,Los Angeles,CA,USA,10,true
+6,HomeComfort Wholesale,orders@homecomfort.com,Atlanta,GA,USA,12,true
+7,GardenPro Distributors,info@gardenpro.com,Denver,CO,USA,8,true
+8,Nordic Furniture,export@nordicfurniture.com,Minneapolis,MN,USA,30,false
+9,BevWorld Distributors,sales@bevworld.com,Dallas,TX,USA,3,true
+10,ElectroWave Corp,b2b@electrowave.com,Seattle,WA,USA,6,true

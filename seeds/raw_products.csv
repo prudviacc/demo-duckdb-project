@@ -1,6 +1,21 @@
-product_id,product_name,product_price
-1,Laptop,999.99
-2,Mouse,29.99
-3,Keyboard,79.99
-4,Monitor,349.99
-5,Defective Item,-10.00
+product_id,sku,product_name,category_id,supplier_id,brand,unit_cost,unit_price,weight_kg,is_active
+1,SKU-ELEC-001,15-inch Laptop Pro,2,1,TechElite,599.00,999.99,1.8,true
+2,SKU-ELEC-002,Mechanical Keyboard,2,10,KeyMaster,45.00,89.99,0.9,true
+3,SKU-ELEC-003,27-inch 4K Monitor,2,10,ViewMax,220.00,399.99,5.2,true
+4,SKU-ELEC-004,Wireless Mouse,2,10,ClickPro,12.00,29.99,0.15,true
+5,SKU-MOB-001,Smartphone X12,3,2,MobileTech,480.00,799.99,0.2,true
+6,SKU-MOB-002,Tablet Pro 10,3,2,MobileTech,250.00,449.99,0.5,true
+7,SKU-MOB-003,Noise Cancelling Headphones,3,2,SoundWave,80.00,159.99,0.3,true
+8,SKU-MENS-001,Classic Denim Jeans,5,4,StyleCo,18.00,59.99,0.6,true
+9,SKU-MENS-002,Formal Dress Shirt,5,4,StyleCo,14.00,44.99,0.3,true
+10,SKU-MENS-003,Running Shoes,5,5,UrbanStep,35.00,89.99,0.7,true
+11,SKU-WMNS-001,Summer Floral Dress,6,5,UrbanFashion,22.00,74.99,0.4,true
+12,SKU-FURN-001,Solid Oak Dining Table,8,8,NordicOak,380.00,799.99,35.0,false
+13,SKU-FURN-002,3-Seater Sofa,8,6,HomeComfort,310.00,649.99,42.0,true
+14,SKU-GARD-001,Cordless Electric Lawnmower,9,7,GreenCut,145.00,289.99,8.5,true
+15,SKU-GARD-002,Stainless Steel Garden Trowel,9,7,GardenPro,4.50,12.99,0.3,true
+16,SKU-PROD-001,Organic Apple Bag 3lb,11,3,Fresh&Local,2.50,5.99,1.4,true
+17,SKU-PROD-002,Baby Spinach 5oz,11,3,Fresh&Local,1.20,3.49,0.15,true
+18,SKU-PROD-003,Avocado Pack of 4,11,3,Fresh&Local,3.00,6.99,0.6,true
+19,SKU-BEV-001,Premium Sparkling Water 12-pack,12,9,AquaSpark,6.00,14.99,5.5,true
+20,SKU-BEV-002,Cold Brew Coffee 4-pack,12,9,BrewCo,8.50,18.99,2.0,true

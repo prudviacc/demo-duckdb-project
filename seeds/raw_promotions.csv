@@ -1,0 +1,11 @@
+promotion_id,promotion_name,discount_type,discount_value,start_date,end_date,applies_to_category_id,min_order_amount,is_active
+1,Summer Electronics Sale,PERCENTAGE,15.0,2024-06-01,2024-08-31,1,100.00,true
+2,Back to School Tech,PERCENTAGE,10.0,2024-08-01,2024-09-15,2,50.00,true
+3,Fashion Clearance,PERCENTAGE,25.0,2024-07-01,2024-07-31,4,30.00,false
+4,Grocery Savings,FIXED_AMOUNT,5.0,2024-01-01,2024-12-31,10,25.00,true
+5,VIP Corporate Discount,PERCENTAGE,12.0,2024-01-01,2024-12-31,,200.00,true
+6,Home Makeover Sale,PERCENTAGE,20.0,2024-09-01,2024-10-31,7,150.00,true
+7,Weekend Flash Sale,FIXED_AMOUNT,10.0,2024-10-05,2024-10-06,,0.00,false
+8,Loyalty Member Reward,PERCENTAGE,8.0,2024-01-01,2024-12-31,,0.00,true
+9,Mobile Upgrade Event,PERCENTAGE,18.0,2024-11-01,2024-11-30,3,300.00,false
+10,Fresh Produce Bonus,FIXED_AMOUNT,3.0,2024-01-01,2024-12-31,11,15.00,true
