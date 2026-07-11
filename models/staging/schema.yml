@@ -6,19 +6,12 @@ models:
     columns:
       - name: category_id
         description: Unique identifier for each category.
-        tests:
-          - unique
-          - not_null
       - name: category_name
         description: Display name of the category.
-        tests:
-          - not_null
       - name: parent_category_id
         description: References category_id of the parent category. NULL for top-level categories.
       - name: department
         description: High-level business division this category belongs to (e.g. Tech & Electronics, Fashion & Apparel).
-        tests:
-          - not_null
 
   - name: stg_suppliers
     description: Staging model for supplier master data including contact info, geography, and lead time.

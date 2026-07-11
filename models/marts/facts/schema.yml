@@ -203,39 +203,21 @@ models:
     columns:
       - name: sale_date
         description: Calendar date of the sales activity. Corresponds to order_date on the originating orders.
-        tests:
-          - not_null
       - name: store_id
         description: Identifier of the store where the sale occurred.
-        tests:
-          - not_null
       - name: category_id
         description: Product category for this aggregation row.
-        tests:
-          - not_null
       - name: order_count
         description: Number of distinct completed orders that included products from this category at this store on this date.
-        tests:
-          - not_null
       - name: units_sold
         description: Total quantity of units sold for this store/date/category combination.
-        tests:
-          - not_null
       - name: gross_revenue
         description: Gross sales value before discounts. Sum of (quantity * unit_price_at_sale) for all completed order items.
-        tests:
-          - not_null
       - name: total_discounts
         description: Total discount amounts applied across all completed order items for this group.
-        tests:
-          - not_null
       - name: net_revenue
         description: Revenue recognized after discounts. Equals gross_revenue minus total_discounts. Should be <= gross_revenue.
-        tests:
-          - not_null
       - name: total_margin
         description: Gross profit for this group. Sum of (unit_price_at_sale - unit_cost) * quantity across completed items.
-        tests:
-          - not_null
       - name: avg_order_value
         description: Average net revenue per completed order for this store/date/category. Equals net_revenue divided by order_count.

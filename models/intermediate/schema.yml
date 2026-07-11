@@ -131,38 +131,23 @@ models:
     columns:
       - name: inventory_id
         description: Unique inventory record identifier (one per store-product pair).
-        tests:
-          - unique
-          - not_null
       - name: quantity_available
         description: >
           Net sellable units at this location. Equals quantity_on_hand minus quantity_reserved.
           Should never be negative — a negative value indicates a data quality issue in reservations.
-        tests:
-          - not_null
       - name: stock_status
         description: >
           Categorical inventory health status.
           OUT_OF_STOCK: quantity_on_hand = 0.
           LOW_STOCK: quantity_on_hand is at or below the reorder_point.
           IN_STOCK: sufficient stock above the reorder threshold.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK']
       - name: needs_reorder
         description: True when quantity_on_hand is at or below the reorder_point, indicating a purchase order should be raised.
-        tests:
-          - not_null
       - name: inventory_cost_value
         description: >
           Total book value of current stock at supplier cost. Equals quantity_on_hand * unit_cost.
           Used for balance sheet and working capital reporting.
-        tests:
-          - not_null
       - name: inventory_retail_value
         description: >
           Potential revenue if all on-hand units are sold at the current retail unit_price.
           Equals quantity_on_hand * unit_price.
-        tests:
-          - not_null

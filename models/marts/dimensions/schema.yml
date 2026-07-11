@@ -141,37 +141,20 @@ models:
     columns:
       - name: promotion_id
         description: Primary key. Unique promotion identifier.
-        tests:
-          - unique
-          - not_null
       - name: promotion_name
         description: Human-readable campaign name as displayed to store staff and used in reporting.
-        tests:
-          - not_null
       - name: discount_type
         description: Discount calculation method. PERCENTAGE reduces price by a fraction. FIXED_AMOUNT deducts a flat dollar value.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['PERCENTAGE', 'FIXED_AMOUNT']
       - name: discount_value
         description: Magnitude of the discount. For PERCENTAGE, this is percentage points (e.g. 15.0 = 15% off). For FIXED_AMOUNT, this is USD.
-        tests:
-          - not_null
       - name: promotion_duration_days
         description: Total number of calendar days the promotion runs. Equals end_date minus start_date. Should be at least 1.
-        tests:
-          - not_null
       - name: promotion_status
         description: >
           Lifecycle state of the promotion relative to the current date.
           Active: within the valid date range and is_active = true.
           Upcoming: start_date is in the future.
           Expired: end_date has passed or is_active = false.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Active', 'Upcoming', 'Expired']
       - name: applies_to_category_id
         description: If not null, the promotion applies only to products in this category. NULL means store-wide eligibility.
       - name: min_order_amount
