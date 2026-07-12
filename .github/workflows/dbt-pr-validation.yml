@@ -1,11 +1,18 @@
 name: dbt PR Validation
 
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches:
       - main
     paths:
-      - '**/*'
+      - 'models/**'
+      - 'tests/**'
+      - 'dbt_project.yml'
+      - 'profiles.yml'
       - '.github/workflows/**'
 
 jobs:
