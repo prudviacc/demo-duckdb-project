@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'demo_duckdb_project/**'
+      - '**/*'
       - '.github/workflows/**'
 
 jobs:
