@@ -12,17 +12,16 @@ SELECT
     o.customer_segment AS order_customer_segment,
     c.customer_segment AS dim_customer_segment,
     c.is_active
-FROM {{ ref('orders') }} o
-LEFT JOIN {{ ref('customers') }} c
+FROM {{ ref('fct_orders') }} o
+LEFT JOIN {{ ref('dim_customers') }} c
     ON o.customer_id = c.customer_id
 WHERE
     -- Customer does not exist in the customer dimension
     c.customer_id IS NULL
-    -- Customer exists but is not active
-    OR c.is_active = FALSE
-    OR c.is_active = 0
-    -- Customer segment in order does not match the customer dimension
+    -- Customer exists but is not active (customer_status = 'Active' in dim_customers)
+    OR c.customer_status = 'Inactive'
+    -- Customer segment in order does not match the customer dimension segment
     OR (
         c.customer_id IS NOT NULL
-        AND o.customer_segment <> c.customer_segment
+        AND o.customer_segment <> c.segment
     )
