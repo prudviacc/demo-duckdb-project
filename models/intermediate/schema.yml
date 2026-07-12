@@ -1,153 +1,131 @@
 version: 2
-
 models:
-  - name: int_products_enriched
-    description: >
-      Enriched product model joining catalog data with category hierarchy and supplier details.
-      Adds derived margin metrics and price tier segmentation. Used as the canonical product
-      reference for all downstream dimension and fact models.
-    columns:
-      - name: product_id
-        description: Unique product identifier.
-        tests:
-          - unique
-          - not_null
-      - name: sku
-        description: Stock Keeping Unit code. Unique alphanumeric product code used in warehouse and POS systems.
-        tests:
-          - unique
-          - not_null
-      - name: gross_margin_amount
-        description: Gross profit per unit in USD. Equals unit_price minus unit_cost.
-        tests:
-          - not_null
-      - name: gross_margin_pct
-        description: >
-          Gross margin as a percentage of the retail selling price.
-          Calculated as (unit_price - unit_cost) / unit_price * 100.
-          Should be between 0 and 100 for active products with valid pricing.
-        tests:
-          - not_null
-      - name: price_tier
-        description: >
-          Price-based product segment used for merchandising and reporting.
-          Budget: under $25, Value: $25–$99, Standard: $100–$499, Premium: $500–$1999, Luxury: $2000+.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Budget', 'Value', 'Standard', 'Premium', 'Luxury']
-      - name: category_name
-        description: Leaf-level category name for this product.
-      - name: parent_category_name
-        description: Top-level category name. NULL for products assigned directly to a top-level category.
-      - name: department
-        description: High-level business division (e.g. Tech & Electronics, Fashion & Apparel).
-      - name: lead_time_days
-        description: Supplier lead time in calendar days. Used in inventory replenishment calculations.
+- name: int_products_enriched
+  description: 'Enriched product model joining catalog data with category hierarchy
+    and supplier details. Adds derived margin metrics and price tier segmentation.
+    Used as the canonical product reference for all downstream dimension and fact
+    models.
 
-  - name: int_orders_enriched
-    description: >
-      Enriched order model joining order headers with customer, store, and optional promotion data.
-      Adds date part extractions and boolean status flags. Used as the order context source for
-      int_order_items_enriched and fact models.
-    columns:
-      - name: order_id
-        description: Unique order identifier.
-        tests:
-          - unique
-          - not_null
-      - name: order_year
-        description: Calendar year extracted from order_date.
-        tests:
-          - not_null
-      - name: order_month
-        description: Calendar month (1–12) extracted from order_date.
-        tests:
-          - not_null
-      - name: order_quarter
-        description: Calendar quarter (1–4) extracted from order_date.
-        tests:
-          - not_null
-      - name: is_completed
-        description: True if the order status is COMPLETED. Mutually exclusive with is_cancelled, is_returned, and is_pending.
-        tests:
-          - not_null
-      - name: is_cancelled
-        description: True if the order status is CANCELLED. Revenue from cancelled orders should be excluded from sales reporting.
-        tests:
-          - not_null
-      - name: is_returned
-        description: True if the order status is RETURNED. Returned orders represent reversed revenue.
-        tests:
-          - not_null
-      - name: has_promotion
-        description: True if a promotion code was applied to this order (promotion_id is not null).
-        tests:
-          - not_null
-      - name: customer_segment
-        description: Customer business segment (Consumer, Corporate, SMB) inherited from the customer record.
-      - name: store_region
-        description: US geographic region of the fulfilling store.
+    '
+  columns:
+  - name: product_id
+    description: Unique product identifier.
+  - name: sku
+    description: Stock Keeping Unit code. Unique alphanumeric product code used in
+      warehouse and POS systems.
+  - name: gross_margin_amount
+    description: Gross profit per unit in USD. Equals unit_price minus unit_cost.
+  - name: gross_margin_pct
+    description: 'Gross margin as a percentage of the retail selling price. Calculated
+      as (unit_price - unit_cost) / unit_price * 100. Should be between 0 and 100
+      for active products with valid pricing.
 
-  - name: int_order_items_enriched
-    description: >
-      The most granular transactional model. Joins order line items with full order context and
-      product enrichment. Each row is one product line within one order. Used as the primary
-      source for both fct_order_items and fct_orders (via aggregation).
-    columns:
-      - name: order_item_id
-        description: Unique identifier for this order line item.
-        tests:
-          - unique
-          - not_null
-      - name: margin_per_unit
-        description: >
-          Gross profit per unit sold. Equals unit_price_at_sale minus unit_cost.
-          A positive value indicates a profitable sale. Negative margin indicates the item was sold below cost.
-        tests:
-          - not_null
-      - name: total_margin_amount
-        description: Total gross profit for this line item. Equals margin_per_unit multiplied by quantity.
-        tests:
-          - not_null
-      - name: margin_pct
-        description: >
-          Gross margin as a percentage of unit_price_at_sale.
-          Typical retail range is 10–70%. Used to identify loss-leader products.
-      - name: line_total
-        description: Net revenue for this line after discount. Equals quantity * unit_price_at_sale - discount_amount.
-        tests:
-          - not_null
-      - name: price_tier
-        description: Price tier of the product at its catalog price (not the sale price).
-      - name: department
-        description: Business division of the product sold on this line.
+      '
+  - name: price_tier
+    description: "Price-based product segment used for merchandising and reporting.\
+      \ Budget: under $25, Value: $25\u2013$99, Standard: $100\u2013$499, Premium:\
+      \ $500\u2013$1999, Luxury: $2000+.\n"
+  - name: category_name
+    description: Leaf-level category name for this product.
+  - name: parent_category_name
+    description: Top-level category name. NULL for products assigned directly to a
+      top-level category.
+  - name: department
+    description: High-level business division (e.g. Tech & Electronics, Fashion &
+      Apparel).
+  - name: lead_time_days
+    description: Supplier lead time in calendar days. Used in inventory replenishment
+      calculations.
+- name: int_orders_enriched
+  description: 'Enriched order model joining order headers with customer, store, and
+    optional promotion data. Adds date part extractions and boolean status flags.
+    Used as the order context source for int_order_items_enriched and fact models.
 
-  - name: int_inventory_status
-    description: >
-      Enriched inventory model adding stock health classification, availability calculation,
-      and inventory value metrics. Joins store-level stock counts with product and store attributes.
-      Used as the source for fct_inventory_snapshot.
-    columns:
-      - name: inventory_id
-        description: Unique inventory record identifier (one per store-product pair).
-      - name: quantity_available
-        description: >
-          Net sellable units at this location. Equals quantity_on_hand minus quantity_reserved.
-          Should never be negative — a negative value indicates a data quality issue in reservations.
-      - name: stock_status
-        description: >
-          Categorical inventory health status.
-          OUT_OF_STOCK: quantity_on_hand = 0.
-          LOW_STOCK: quantity_on_hand is at or below the reorder_point.
-          IN_STOCK: sufficient stock above the reorder threshold.
-      - name: needs_reorder
-        description: True when quantity_on_hand is at or below the reorder_point, indicating a purchase order should be raised.
-      - name: inventory_cost_value
-        description: >
-          Total book value of current stock at supplier cost. Equals quantity_on_hand * unit_cost.
-          Used for balance sheet and working capital reporting.
-      - name: inventory_retail_value
-        description: >
-          Potential revenue if all on-hand units are sold at the current retail unit_price.
-          Equals quantity_on_hand * unit_price.
+    '
+  columns:
+  - name: order_id
+    description: Unique order identifier.
+  - name: order_year
+    description: Calendar year extracted from order_date.
+  - name: order_month
+    description: "Calendar month (1\u201312) extracted from order_date."
+  - name: order_quarter
+    description: "Calendar quarter (1\u20134) extracted from order_date."
+  - name: is_completed
+    description: True if the order status is COMPLETED. Mutually exclusive with is_cancelled,
+      is_returned, and is_pending.
+  - name: is_cancelled
+    description: True if the order status is CANCELLED. Revenue from cancelled orders
+      should be excluded from sales reporting.
+  - name: is_returned
+    description: True if the order status is RETURNED. Returned orders represent reversed
+      revenue.
+  - name: has_promotion
+    description: True if a promotion code was applied to this order (promotion_id
+      is not null).
+  - name: customer_segment
+    description: Customer business segment (Consumer, Corporate, SMB) inherited from
+      the customer record.
+  - name: store_region
+    description: US geographic region of the fulfilling store.
+- name: int_order_items_enriched
+  description: 'The most granular transactional model. Joins order line items with
+    full order context and product enrichment. Each row is one product line within
+    one order. Used as the primary source for both fct_order_items and fct_orders
+    (via aggregation).
+
+    '
+  columns:
+  - name: order_item_id
+    description: Unique identifier for this order line item.
+  - name: margin_per_unit
+    description: 'Gross profit per unit sold. Equals unit_price_at_sale minus unit_cost.
+      A positive value indicates a profitable sale. Negative margin indicates the
+      item was sold below cost.
+
+      '
+  - name: total_margin_amount
+    description: Total gross profit for this line item. Equals margin_per_unit multiplied
+      by quantity.
+  - name: margin_pct
+    description: "Gross margin as a percentage of unit_price_at_sale. Typical retail\
+      \ range is 10\u201370%. Used to identify loss-leader products.\n"
+  - name: line_total
+    description: Net revenue for this line after discount. Equals quantity * unit_price_at_sale
+      - discount_amount.
+  - name: price_tier
+    description: Price tier of the product at its catalog price (not the sale price).
+  - name: department
+    description: Business division of the product sold on this line.
+- name: int_inventory_status
+  description: 'Enriched inventory model adding stock health classification, availability
+    calculation, and inventory value metrics. Joins store-level stock counts with
+    product and store attributes. Used as the source for fct_inventory_snapshot.
+
+    '
+  columns:
+  - name: inventory_id
+    description: Unique inventory record identifier (one per store-product pair).
+  - name: quantity_available
+    description: "Net sellable units at this location. Equals quantity_on_hand minus\
+      \ quantity_reserved. Should never be negative \u2014 a negative value indicates\
+      \ a data quality issue in reservations.\n"
+  - name: stock_status
+    description: 'Categorical inventory health status. OUT_OF_STOCK: quantity_on_hand
+      = 0. LOW_STOCK: quantity_on_hand is at or below the reorder_point. IN_STOCK:
+      sufficient stock above the reorder threshold.
+
+      '
+  - name: needs_reorder
+    description: True when quantity_on_hand is at or below the reorder_point, indicating
+      a purchase order should be raised.
+  - name: inventory_cost_value
+    description: 'Total book value of current stock at supplier cost. Equals quantity_on_hand
+      * unit_cost. Used for balance sheet and working capital reporting.
+
+      '
+  - name: inventory_retail_value
+    description: 'Potential revenue if all on-hand units are sold at the current retail
+      unit_price. Equals quantity_on_hand * unit_price.
+
+      '

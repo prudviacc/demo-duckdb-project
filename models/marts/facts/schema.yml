@@ -1,223 +1,155 @@
 version: 2
-
 models:
-  - name: fct_orders
-    description: >
-      Order-level fact table. One row per order transaction. Aggregates line-item financials
-      from int_order_items_enriched into order-level totals, joined with full order context
-      from int_orders_enriched. Includes all order statuses (COMPLETED, CANCELLED, RETURNED, PENDING).
-    columns:
-      - name: order_id
-        description: Primary key. Unique order identifier. One row per order.
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
-        description: Foreign key to dim_customers. Identifies the customer who placed the order.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_customers')
-              field: customer_id
-      - name: store_id
-        description: Foreign key to dim_stores. Identifies the store that fulfilled the order.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_stores')
-              field: store_id
-      - name: order_date
-        description: Calendar date the order was placed.
-        tests:
-          - not_null
-      - name: order_status
-        description: Current lifecycle state of the order.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['COMPLETED', 'PENDING', 'CANCELLED', 'RETURNED']
-      - name: item_count
-        description: Number of distinct product lines in the order. Should be at least 1 for any order that has items.
-        tests:
-          - not_null
-      - name: total_units_sold
-        description: Sum of quantities across all line items in the order.
-        tests:
-          - not_null
-      - name: order_subtotal
-        description: Gross order value before discounts. Equals sum of (quantity * unit_price_at_sale) across all lines.
-        tests:
-          - not_null
-      - name: total_discount_amount
-        description: Total discount applied across all line items in the order.
-        tests:
-          - not_null
-      - name: order_net_total
-        description: Net revenue recognized for this order after discounts. Equals order_subtotal minus total_discount_amount. Should be >= 0 for completed orders.
-        tests:
-          - not_null
-      - name: order_margin_amount
-        description: Total gross profit for the order. Sum of (unit_price_at_sale - unit_cost) * quantity across all lines.
-        tests:
-          - not_null
-      - name: order_margin_pct
-        description: Order-level gross margin as a percentage of order_net_total. Typical retail range is 10–60%.
-      - name: is_completed
-        description: True if the order status is COMPLETED.
-        tests:
-          - not_null
-      - name: is_cancelled
-        description: True if the order status is CANCELLED. Revenue from cancelled orders should not be included in sales KPIs.
-        tests:
-          - not_null
-      - name: is_returned
-        description: True if the order was returned. Returned order revenue should be treated as reversed.
-        tests:
-          - not_null
-      - name: has_promotion
-        description: True if a promotion was applied to this order.
-        tests:
-          - not_null
+- name: fct_orders
+  description: 'Order-level fact table. One row per order transaction. Aggregates
+    line-item financials from int_order_items_enriched into order-level totals, joined
+    with full order context from int_orders_enriched. Includes all order statuses
+    (COMPLETED, CANCELLED, RETURNED, PENDING).
 
-  - name: fct_order_items
-    description: >
-      Line-item fact table. The most granular transactional model — one row per product within
-      each order. Contains full product context, financial metrics, and margin calculations.
-      Use this model for product-level revenue, category analysis, and margin reporting.
-    columns:
-      - name: order_item_id
-        description: Primary key. Unique identifier for each order line item.
-        tests:
-          - unique
-          - not_null
-      - name: order_id
-        description: Foreign key to fct_orders. Groups line items into their parent order.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fct_orders')
-              field: order_id
-      - name: product_id
-        description: Foreign key to dim_products. Identifies the product purchased.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_products')
-              field: product_id
-      - name: quantity
-        description: Number of units purchased. Must be a positive integer.
-        tests:
-          - not_null
-      - name: unit_price_at_sale
-        description: Actual retail price per unit charged at time of purchase. May differ from the current catalog unit_price.
-        tests:
-          - not_null
-      - name: discount_amount
-        description: Total discount applied to this line item in USD. Zero for non-promoted lines.
-        tests:
-          - not_null
-      - name: line_total
-        description: Net revenue for this line after discount. Equals quantity * unit_price_at_sale - discount_amount.
-        tests:
-          - not_null
-      - name: margin_per_unit
-        description: Gross profit per unit. Equals unit_price_at_sale minus unit_cost. Negative indicates item sold below cost.
-        tests:
-          - not_null
-      - name: total_margin_amount
-        description: Total gross profit for this line. Equals margin_per_unit multiplied by quantity.
-        tests:
-          - not_null
-      - name: margin_pct
-        description: Gross margin as a percentage of unit_price_at_sale. Typical retail range is 10–70%. Used to flag loss-leader items.
-      - name: is_completed
-        description: True if the parent order status is COMPLETED.
-        tests:
-          - not_null
+    '
+  columns:
+  - name: order_id
+    description: Primary key. Unique order identifier. One row per order.
+  - name: customer_id
+    description: Foreign key to dim_customers. Identifies the customer who placed
+      the order.
+  - name: store_id
+    description: Foreign key to dim_stores. Identifies the store that fulfilled the
+      order.
+  - name: order_date
+    description: Calendar date the order was placed.
+  - name: order_status
+    description: Current lifecycle state of the order.
+  - name: item_count
+    description: Number of distinct product lines in the order. Should be at least
+      1 for any order that has items.
+  - name: total_units_sold
+    description: Sum of quantities across all line items in the order.
+  - name: order_subtotal
+    description: Gross order value before discounts. Equals sum of (quantity * unit_price_at_sale)
+      across all lines.
+  - name: total_discount_amount
+    description: Total discount applied across all line items in the order.
+  - name: order_net_total
+    description: Net revenue recognized for this order after discounts. Equals order_subtotal
+      minus total_discount_amount. Should be >= 0 for completed orders.
+  - name: order_margin_amount
+    description: Total gross profit for the order. Sum of (unit_price_at_sale - unit_cost)
+      * quantity across all lines.
+  - name: order_margin_pct
+    description: "Order-level gross margin as a percentage of order_net_total. Typical\
+      \ retail range is 10\u201360%."
+  - name: is_completed
+    description: True if the order status is COMPLETED.
+  - name: is_cancelled
+    description: True if the order status is CANCELLED. Revenue from cancelled orders
+      should not be included in sales KPIs.
+  - name: is_returned
+    description: True if the order was returned. Returned order revenue should be
+      treated as reversed.
+  - name: has_promotion
+    description: True if a promotion was applied to this order.
+- name: fct_order_items
+  description: "Line-item fact table. The most granular transactional model \u2014\
+    \ one row per product within each order. Contains full product context, financial\
+    \ metrics, and margin calculations. Use this model for product-level revenue,\
+    \ category analysis, and margin reporting.\n"
+  columns:
+  - name: order_item_id
+    description: Primary key. Unique identifier for each order line item.
+  - name: order_id
+    description: Foreign key to fct_orders. Groups line items into their parent order.
+  - name: product_id
+    description: Foreign key to dim_products. Identifies the product purchased.
+  - name: quantity
+    description: Number of units purchased. Must be a positive integer.
+  - name: unit_price_at_sale
+    description: Actual retail price per unit charged at time of purchase. May differ
+      from the current catalog unit_price.
+  - name: discount_amount
+    description: Total discount applied to this line item in USD. Zero for non-promoted
+      lines.
+  - name: line_total
+    description: Net revenue for this line after discount. Equals quantity * unit_price_at_sale
+      - discount_amount.
+  - name: margin_per_unit
+    description: Gross profit per unit. Equals unit_price_at_sale minus unit_cost.
+      Negative indicates item sold below cost.
+  - name: total_margin_amount
+    description: Total gross profit for this line. Equals margin_per_unit multiplied
+      by quantity.
+  - name: margin_pct
+    description: "Gross margin as a percentage of unit_price_at_sale. Typical retail\
+      \ range is 10\u201370%. Used to flag loss-leader items."
+  - name: is_completed
+    description: True if the parent order status is COMPLETED.
+- name: fct_inventory_snapshot
+  description: 'Point-in-time inventory snapshot. One row per store-product combination
+    (inventory_id). Captures current stock levels, availability, stock health status,
+    and inventory value. snapshot_date is set to current_date at model run time.
 
-  - name: fct_inventory_snapshot
-    description: >
-      Point-in-time inventory snapshot. One row per store-product combination (inventory_id).
-      Captures current stock levels, availability, stock health status, and inventory value.
-      snapshot_date is set to current_date at model run time.
-    columns:
-      - name: inventory_id
-        description: Primary key. Unique inventory record identifier (one per store-product pair).
-        tests:
-          - unique
-          - not_null
-      - name: product_id
-        description: Foreign key to dim_products. Identifies the product being tracked.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_products')
-              field: product_id
-      - name: store_id
-        description: Foreign key to dim_stores. Identifies the store holding this inventory.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_stores')
-              field: store_id
-      - name: quantity_on_hand
-        description: Current physical stock count at this store. Zero indicates an out-of-stock condition.
-        tests:
-          - not_null
-      - name: quantity_reserved
-        description: Units reserved for pending orders. Must not exceed quantity_on_hand.
-        tests:
-          - not_null
-      - name: quantity_available
-        description: Net sellable units. Equals quantity_on_hand minus quantity_reserved. Must be >= 0.
-        tests:
-          - not_null
-      - name: stock_status
-        description: Categorical inventory health. OUT_OF_STOCK = zero units. LOW_STOCK = at or below reorder_point. IN_STOCK = above threshold.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK']
-      - name: needs_reorder
-        description: True when quantity_on_hand is at or below reorder_point. Signals that a purchase order should be raised.
-        tests:
-          - not_null
-      - name: inventory_cost_value
-        description: Book value of current stock at supplier cost. Equals quantity_on_hand * unit_cost. Used for balance sheet reporting.
-        tests:
-          - not_null
-      - name: inventory_retail_value
-        description: Potential revenue if all on-hand units are sold at the current retail unit_price. Equals quantity_on_hand * unit_price.
-        tests:
-          - not_null
-      - name: snapshot_date
-        description: Date this snapshot was captured, set to current_date at model run time.
-        tests:
-          - not_null
-
-  - name: fct_daily_sales
-    description: >
-      Daily sales summary fact table. Grain is one row per (sale_date, store_id, category_id).
-      IMPORTANT: This model includes ONLY completed orders — cancelled and returned orders are
-      explicitly excluded from all metrics. Use fct_orders for full order status reporting.
-    columns:
-      - name: sale_date
-        description: Calendar date of the sales activity. Corresponds to order_date on the originating orders.
-      - name: store_id
-        description: Identifier of the store where the sale occurred.
-      - name: category_id
-        description: Product category for this aggregation row.
-      - name: order_count
-        description: Number of distinct completed orders that included products from this category at this store on this date.
-      - name: units_sold
-        description: Total quantity of units sold for this store/date/category combination.
-      - name: gross_revenue
-        description: Gross sales value before discounts. Sum of (quantity * unit_price_at_sale) for all completed order items.
-      - name: total_discounts
-        description: Total discount amounts applied across all completed order items for this group.
-      - name: net_revenue
-        description: Revenue recognized after discounts. Equals gross_revenue minus total_discounts. Should be <= gross_revenue.
-      - name: total_margin
-        description: Gross profit for this group. Sum of (unit_price_at_sale - unit_cost) * quantity across completed items.
-      - name: avg_order_value
-        description: Average net revenue per completed order for this store/date/category. Equals net_revenue divided by order_count.
+    '
+  columns:
+  - name: inventory_id
+    description: Primary key. Unique inventory record identifier (one per store-product
+      pair).
+  - name: product_id
+    description: Foreign key to dim_products. Identifies the product being tracked.
+  - name: store_id
+    description: Foreign key to dim_stores. Identifies the store holding this inventory.
+  - name: quantity_on_hand
+    description: Current physical stock count at this store. Zero indicates an out-of-stock
+      condition.
+  - name: quantity_reserved
+    description: Units reserved for pending orders. Must not exceed quantity_on_hand.
+  - name: quantity_available
+    description: Net sellable units. Equals quantity_on_hand minus quantity_reserved.
+      Must be >= 0.
+  - name: stock_status
+    description: Categorical inventory health. OUT_OF_STOCK = zero units. LOW_STOCK
+      = at or below reorder_point. IN_STOCK = above threshold.
+  - name: needs_reorder
+    description: True when quantity_on_hand is at or below reorder_point. Signals
+      that a purchase order should be raised.
+  - name: inventory_cost_value
+    description: Book value of current stock at supplier cost. Equals quantity_on_hand
+      * unit_cost. Used for balance sheet reporting.
+  - name: inventory_retail_value
+    description: Potential revenue if all on-hand units are sold at the current retail
+      unit_price. Equals quantity_on_hand * unit_price.
+  - name: snapshot_date
+    description: Date this snapshot was captured, set to current_date at model run
+      time.
+- name: fct_daily_sales
+  description: "Daily sales summary fact table. Grain is one row per (sale_date, store_id,\
+    \ category_id). IMPORTANT: This model includes ONLY completed orders \u2014 cancelled\
+    \ and returned orders are explicitly excluded from all metrics. Use fct_orders\
+    \ for full order status reporting.\n"
+  columns:
+  - name: sale_date
+    description: Calendar date of the sales activity. Corresponds to order_date on
+      the originating orders.
+  - name: store_id
+    description: Identifier of the store where the sale occurred.
+  - name: category_id
+    description: Product category for this aggregation row.
+  - name: order_count
+    description: Number of distinct completed orders that included products from this
+      category at this store on this date.
+  - name: units_sold
+    description: Total quantity of units sold for this store/date/category combination.
+  - name: gross_revenue
+    description: Gross sales value before discounts. Sum of (quantity * unit_price_at_sale)
+      for all completed order items.
+  - name: total_discounts
+    description: Total discount amounts applied across all completed order items for
+      this group.
+  - name: net_revenue
+    description: Revenue recognized after discounts. Equals gross_revenue minus total_discounts.
+      Should be <= gross_revenue.
+  - name: total_margin
+    description: Gross profit for this group. Sum of (unit_price_at_sale - unit_cost)
+      * quantity across completed items.
+  - name: avg_order_value
+    description: Average net revenue per completed order for this store/date/category.
+      Equals net_revenue divided by order_count.

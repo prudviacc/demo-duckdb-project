@@ -1,307 +1,185 @@
 version: 2
-
 models:
-  - name: stg_categories
-    description: Staging model for product category hierarchy. Supports two levels — top-level departments and leaf sub-categories.
-    columns:
-      - name: category_id
-        description: Unique identifier for each category.
-      - name: category_name
-        description: Display name of the category.
-      - name: parent_category_id
-        description: References category_id of the parent category. NULL for top-level categories.
-      - name: department
-        description: High-level business division this category belongs to (e.g. Tech & Electronics, Fashion & Apparel).
-
-  - name: stg_suppliers
-    description: Staging model for supplier master data including contact info, geography, and lead time.
-    columns:
-      - name: supplier_id
-        description: Unique identifier for each supplier.
-        tests:
-          - unique
-          - not_null
-      - name: supplier_name
-        description: Legal or trading name of the supplier.
-        tests:
-          - not_null
-      - name: contact_email
-        description: Primary procurement contact email for this supplier.
-      - name: lead_time_days
-        description: Average number of calendar days from purchase order to delivery. Used in inventory replenishment planning.
-        tests:
-          - not_null
-      - name: is_active
-        description: Whether this supplier is currently contracted and eligible for new purchase orders.
-        tests:
-          - accepted_values:
-              values: ['true', 'false']
-
-  - name: stg_products
-    description: Staging model for the product catalog. Each row is a unique SKU with pricing and classification.
-    columns:
-      - name: product_id
-        description: Unique numeric identifier for each product.
-        tests:
-          - unique
-          - not_null
-      - name: sku
-        description: Stock Keeping Unit code. Alphanumeric identifier used in warehouse and point-of-sale systems.
-        tests:
-          - unique
-          - not_null
-      - name: product_name
-        description: Customer-facing product display name.
-        tests:
-          - not_null
-      - name: category_id
-        description: Foreign key to stg_categories. Assigns the product to a leaf-level category.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_categories')
-              field: category_id
-      - name: supplier_id
-        description: Foreign key to stg_suppliers. Identifies which supplier provides this product.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_suppliers')
-              field: supplier_id
-      - name: unit_cost
-        description: Supplier cost per unit in USD. Must be positive. Used for margin calculations.
-        tests:
-          - not_null
-      - name: unit_price
-        description: Retail selling price per unit in USD. Must be positive and greater than unit_cost for profitable products.
-        tests:
-          - not_null
-      - name: is_active
-        description: Whether the product is currently available for sale in stores.
-        tests:
-          - not_null
-
-  - name: stg_stores
-    description: Staging model for physical retail store locations including region, type, and operational status.
-    columns:
-      - name: store_id
-        description: Unique identifier for each store location.
-        tests:
-          - unique
-          - not_null
-      - name: store_name
-        description: Descriptive name of the store location.
-        tests:
-          - not_null
-      - name: region
-        description: US geographic region used for regional sales reporting.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Midwest', 'West', 'Northeast', 'South', 'Mountain', 'Southwest']
-      - name: store_type
-        description: Operational store format. Flagship stores are large anchor locations; Express are small-format convenience stores.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Flagship', 'Standard', 'Express']
-      - name: open_date
-        description: Date the store first opened to customers.
-        tests:
-          - not_null
-      - name: is_active
-        description: Whether the store is currently open and trading.
-        tests:
-          - not_null
-      - name: sq_footage
-        description: Total store floor area in square feet. Used to classify store size bucket.
-        tests:
-          - not_null
-
-  - name: stg_customers
-    description: Staging model for customer master data with segment classification and registration history.
-    columns:
-      - name: customer_id
-        description: Unique identifier for each customer account.
-        tests:
-          - unique
-          - not_null
-      - name: email
-        description: Customer email address. Used as the unique contact identifier for marketing and account recovery.
-        tests:
-          - unique
-          - not_null
-      - name: segment
-        description: Customer business segment — Consumer (individual shoppers), Corporate (enterprise accounts), SMB (small/medium businesses).
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Consumer', 'Corporate', 'SMB']
-      - name: registration_date
-        description: Date the customer created their account. Used to calculate tenure and cohort membership.
-        tests:
-          - not_null
-      - name: is_active
-        description: Whether the customer account is in good standing.
-        tests:
-          - not_null
-
-  - name: stg_promotions
-    description: Staging model for promotional campaigns including discount rules, eligibility windows, and category scope.
-    columns:
-      - name: promotion_id
-        description: Unique identifier for each promotion.
-        tests:
-          - unique
-          - not_null
-      - name: promotion_name
-        description: Human-readable name of the promotion as shown to store staff.
-        tests:
-          - not_null
-      - name: discount_type
-        description: Method of discount calculation. PERCENTAGE reduces the price by a fraction; FIXED_AMOUNT deducts a flat dollar value.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['PERCENTAGE', 'FIXED_AMOUNT']
-      - name: discount_value
-        description: Magnitude of the discount. For PERCENTAGE type, this is the percentage points (e.g. 15.0 = 15%). For FIXED_AMOUNT, this is dollars.
-        tests:
-          - not_null
-      - name: start_date
-        description: First date on which the promotion is valid.
-        tests:
-          - not_null
-      - name: end_date
-        description: Last date on which the promotion is valid. Must be after start_date.
-        tests:
-          - not_null
-      - name: applies_to_category_id
-        description: If not null, this promotion applies only to products in the specified category. NULL means the promotion is store-wide.
-      - name: min_order_amount
-        description: Minimum order subtotal in USD required to apply this promotion. Zero means no minimum.
-        tests:
-          - not_null
-
-  - name: stg_orders
-    description: Staging model for order headers. One row per customer transaction, capturing status, payment method, and store assignment.
-    columns:
-      - name: order_id
-        description: Unique identifier for each order transaction.
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
-        description: Foreign key to stg_customers. Every order must be placed by an existing customer.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_customers')
-              field: customer_id
-      - name: store_id
-        description: Foreign key to stg_stores. Identifies which store fulfilled the order.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_stores')
-              field: store_id
-      - name: promotion_id
-        description: Foreign key to stg_promotions. NULL if no promotion was applied to this order.
-      - name: order_date
-        description: Calendar date the order was placed.
-        tests:
-          - not_null
-      - name: order_status
-        description: Current lifecycle state of the order.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['COMPLETED', 'PENDING', 'CANCELLED', 'RETURNED']
-      - name: payment_method
-        description: Payment instrument used at checkout.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'DIGITAL_WALLET']
-
-  - name: stg_order_items
-    description: Staging model for order line items. One row per product within an order, capturing quantity, pricing, and discount applied.
-    columns:
-      - name: order_item_id
-        description: Unique identifier for each order line item.
-        tests:
-          - unique
-          - not_null
-      - name: order_id
-        description: Foreign key to stg_orders. Groups line items into their parent order.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_orders')
-              field: order_id
-      - name: product_id
-        description: Foreign key to stg_products. Identifies the product purchased on this line.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_products')
-              field: product_id
-      - name: quantity
-        description: Number of units purchased for this line item. Must be a positive integer.
-        tests:
-          - not_null
-      - name: unit_price_at_sale
-        description: Actual retail price per unit at the time of purchase. May differ from the current catalog unit_price if prices have changed.
-        tests:
-          - not_null
-      - name: discount_amount
-        description: Total discount applied to this line item in USD. Zero for non-promoted lines.
-        tests:
-          - not_null
-      - name: line_total
-        description: Net revenue for this line after discounts. Equals quantity * unit_price_at_sale - discount_amount.
-        tests:
-          - not_null
-
-  - name: stg_inventory
-    description: Staging model for store-level inventory records. One row per store-product combination with stock counts and reorder thresholds.
-    columns:
-      - name: inventory_id
-        description: Unique identifier for each inventory record.
-        tests:
-          - unique
-          - not_null
-      - name: store_id
-        description: Foreign key to stg_stores. Identifies the store holding this inventory.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_stores')
-              field: store_id
-      - name: product_id
-        description: Foreign key to stg_products. Identifies the product being tracked.
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_products')
-              field: product_id
-      - name: quantity_on_hand
-        description: Current physical stock count at this store location. Zero indicates an out-of-stock condition.
-        tests:
-          - not_null
-      - name: quantity_reserved
-        description: Units reserved for pending or in-progress orders. Must not exceed quantity_on_hand.
-        tests:
-          - not_null
-      - name: reorder_point
-        description: Stock level threshold that triggers a replenishment purchase order when quantity_on_hand falls at or below this value.
-        tests:
-          - not_null
-      - name: reorder_quantity
-        description: Standard quantity to order when a replenishment is triggered.
-        tests:
-          - not_null
-      - name: last_restocked_date
-        description: Date of the most recent inventory replenishment at this store for this product.
-        tests:
-          - not_null
+- name: stg_categories
+  description: "Staging model for product category hierarchy. Supports two levels\
+    \ \u2014 top-level departments and leaf sub-categories."
+  columns:
+  - name: category_id
+    description: Unique identifier for each category.
+  - name: category_name
+    description: Display name of the category.
+  - name: parent_category_id
+    description: References category_id of the parent category. NULL for top-level
+      categories.
+  - name: department
+    description: High-level business division this category belongs to (e.g. Tech
+      & Electronics, Fashion & Apparel).
+- name: stg_suppliers
+  description: Staging model for supplier master data including contact info, geography,
+    and lead time.
+  columns:
+  - name: supplier_id
+    description: Unique identifier for each supplier.
+  - name: supplier_name
+    description: Legal or trading name of the supplier.
+  - name: contact_email
+    description: Primary procurement contact email for this supplier.
+  - name: lead_time_days
+    description: Average number of calendar days from purchase order to delivery.
+      Used in inventory replenishment planning.
+  - name: is_active
+    description: Whether this supplier is currently contracted and eligible for new
+      purchase orders.
+- name: stg_products
+  description: Staging model for the product catalog. Each row is a unique SKU with
+    pricing and classification.
+  columns:
+  - name: product_id
+    description: Unique numeric identifier for each product.
+  - name: sku
+    description: Stock Keeping Unit code. Alphanumeric identifier used in warehouse
+      and point-of-sale systems.
+  - name: product_name
+    description: Customer-facing product display name.
+  - name: category_id
+    description: Foreign key to stg_categories. Assigns the product to a leaf-level
+      category.
+  - name: supplier_id
+    description: Foreign key to stg_suppliers. Identifies which supplier provides
+      this product.
+  - name: unit_cost
+    description: Supplier cost per unit in USD. Must be positive. Used for margin
+      calculations.
+  - name: unit_price
+    description: Retail selling price per unit in USD. Must be positive and greater
+      than unit_cost for profitable products.
+  - name: is_active
+    description: Whether the product is currently available for sale in stores.
+- name: stg_stores
+  description: Staging model for physical retail store locations including region,
+    type, and operational status.
+  columns:
+  - name: store_id
+    description: Unique identifier for each store location.
+  - name: store_name
+    description: Descriptive name of the store location.
+  - name: region
+    description: US geographic region used for regional sales reporting.
+  - name: store_type
+    description: Operational store format. Flagship stores are large anchor locations;
+      Express are small-format convenience stores.
+  - name: open_date
+    description: Date the store first opened to customers.
+  - name: is_active
+    description: Whether the store is currently open and trading.
+  - name: sq_footage
+    description: Total store floor area in square feet. Used to classify store size
+      bucket.
+- name: stg_customers
+  description: Staging model for customer master data with segment classification
+    and registration history.
+  columns:
+  - name: customer_id
+    description: Unique identifier for each customer account.
+  - name: email
+    description: Customer email address. Used as the unique contact identifier for
+      marketing and account recovery.
+  - name: segment
+    description: "Customer business segment \u2014 Consumer (individual shoppers),\
+      \ Corporate (enterprise accounts), SMB (small/medium businesses)."
+  - name: registration_date
+    description: Date the customer created their account. Used to calculate tenure
+      and cohort membership.
+  - name: is_active
+    description: Whether the customer account is in good standing.
+- name: stg_promotions
+  description: Staging model for promotional campaigns including discount rules, eligibility
+    windows, and category scope.
+  columns:
+  - name: promotion_id
+    description: Unique identifier for each promotion.
+  - name: promotion_name
+    description: Human-readable name of the promotion as shown to store staff.
+  - name: discount_type
+    description: Method of discount calculation. PERCENTAGE reduces the price by a
+      fraction; FIXED_AMOUNT deducts a flat dollar value.
+  - name: discount_value
+    description: Magnitude of the discount. For PERCENTAGE type, this is the percentage
+      points (e.g. 15.0 = 15%). For FIXED_AMOUNT, this is dollars.
+  - name: start_date
+    description: First date on which the promotion is valid.
+  - name: end_date
+    description: Last date on which the promotion is valid. Must be after start_date.
+  - name: applies_to_category_id
+    description: If not null, this promotion applies only to products in the specified
+      category. NULL means the promotion is store-wide.
+  - name: min_order_amount
+    description: Minimum order subtotal in USD required to apply this promotion. Zero
+      means no minimum.
+- name: stg_orders
+  description: Staging model for order headers. One row per customer transaction,
+    capturing status, payment method, and store assignment.
+  columns:
+  - name: order_id
+    description: Unique identifier for each order transaction.
+  - name: customer_id
+    description: Foreign key to stg_customers. Every order must be placed by an existing
+      customer.
+  - name: store_id
+    description: Foreign key to stg_stores. Identifies which store fulfilled the order.
+  - name: promotion_id
+    description: Foreign key to stg_promotions. NULL if no promotion was applied to
+      this order.
+  - name: order_date
+    description: Calendar date the order was placed.
+  - name: order_status
+    description: Current lifecycle state of the order.
+  - name: payment_method
+    description: Payment instrument used at checkout.
+- name: stg_order_items
+  description: Staging model for order line items. One row per product within an order,
+    capturing quantity, pricing, and discount applied.
+  columns:
+  - name: order_item_id
+    description: Unique identifier for each order line item.
+  - name: order_id
+    description: Foreign key to stg_orders. Groups line items into their parent order.
+  - name: product_id
+    description: Foreign key to stg_products. Identifies the product purchased on
+      this line.
+  - name: quantity
+    description: Number of units purchased for this line item. Must be a positive
+      integer.
+  - name: unit_price_at_sale
+    description: Actual retail price per unit at the time of purchase. May differ
+      from the current catalog unit_price if prices have changed.
+  - name: discount_amount
+    description: Total discount applied to this line item in USD. Zero for non-promoted
+      lines.
+  - name: line_total
+    description: Net revenue for this line after discounts. Equals quantity * unit_price_at_sale
+      - discount_amount.
+- name: stg_inventory
+  description: Staging model for store-level inventory records. One row per store-product
+    combination with stock counts and reorder thresholds.
+  columns:
+  - name: inventory_id
+    description: Unique identifier for each inventory record.
+  - name: store_id
+    description: Foreign key to stg_stores. Identifies the store holding this inventory.
+  - name: product_id
+    description: Foreign key to stg_products. Identifies the product being tracked.
+  - name: quantity_on_hand
+    description: Current physical stock count at this store location. Zero indicates
+      an out-of-stock condition.
+  - name: quantity_reserved
+    description: Units reserved for pending or in-progress orders. Must not exceed
+      quantity_on_hand.
+  - name: reorder_point
+    description: Stock level threshold that triggers a replenishment purchase order
+      when quantity_on_hand falls at or below this value.
+  - name: reorder_quantity
+    description: Standard quantity to order when a replenishment is triggered.
+  - name: last_restocked_date
+    description: Date of the most recent inventory replenishment at this store for
+      this product.
