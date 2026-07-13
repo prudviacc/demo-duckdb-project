@@ -19,6 +19,9 @@ jobs:
   dbt-validate:
     runs-on: ubuntu-latest
     name: Validate dbt Project
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
